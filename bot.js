@@ -2,7 +2,6 @@ const {
   default: makeWASocket,
   useMultiFileAuthState,
 } = require('@whiskeysockets/baileys')
-const qrcode = require('qrcode-terminal')
 const translate = require('@vitalets/google-translate-api')
 
 async function startBot() {
@@ -15,6 +14,19 @@ async function startBot() {
 
   sock.ev.on('creds.update', saveCreds)
 
+  // ✅ Bot connected → send owner a message
+  sock.ev.on('connection.update', async (update) => {
+    const { connection } = update
+    if (connection === 'open') {
+      const owner = '947XXXXXXXX@s.whatsapp.net' // <-- ඔයාගේ number එක
+      await sock.sendMessage(owner, {
+        text: '✅ Translate Bot is online and ready!',
+      })
+      console.log('Bot connected & owner notified.')
+    }
+  })
+
+  // 📩 Translate Command Handler
   sock.ev.on('messages.upsert', async ({ messages }) => {
     const msg = messages[0]
     if (!msg.message) return
